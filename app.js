@@ -4,9 +4,12 @@ const express = require("express")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const loginModel = require("./models/admin")
+const peopleModel = require("./models/people")
+
 const app = express()
 app.use(cors())
 app.use(express.json())
+
 mongoose.connect("mongodb+srv://Jafna02:jafna9074@cluster0.icijy.mongodb.net/RescueDb?retryWrites=true&w=majority&appName=Cluster0")
 
 app.get("/tasks",(req,res)=>{
@@ -16,7 +19,7 @@ app.get("/tasks",(req,res)=>{
 app.post("/adminSignup",(req,res)=>{
     let input=req.body
     let hashedpassword=bcrypt.hashSync(input.password,10)
-    console.log(hashedpassword)
+    //console.log(hashedpassword)
     input.password=hashedpassword
     console.log(input)
     let result=new loginModel(input)
@@ -48,6 +51,21 @@ app.post("/adminSignin",(req,res)=>{
             }
         }
     ).catch()
+})
+
+app.post("/addPeople",(req,res)=>{
+    let input = req.body
+    let token = req.headers.token
+    jwt.verify(token,"rescue-app",(error,decoded)=>{
+        if(decoded && decoded.email){
+            let result = new peopleModel(input)
+            result.save()
+            res.json({"status":"success"})
+        }
+        else{
+            res.json({"status":"invalid authentication"})
+        }
+    })
 })
 
 
